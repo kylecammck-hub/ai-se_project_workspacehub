@@ -4,15 +4,14 @@ import { StatusPanel } from "../components/StatusPanel";
 import { useAuth } from "../hooks/useAuth";
 import { bookingService } from "../services/bookingService";
 import type { Booking } from "../types/models";
+import {
+  hasBookingFormErrors,
+  validateBookingFormState,
+  type BookingFormErrors,
+  type BookingFormState,
+} from "../utils/bookingValidation";
 import { formatDateTimeInput } from "../utils/date";
 import { canDeleteResources, canEditBooking } from "../utils/permissions";
-
-interface BookingFormState {
-  title: string;
-  description: string;
-  startsAt: string;
-  endsAt: string;
-}
 
 const buildBookingFormState = (booking: Booking): BookingFormState => ({
   title: booking.title,
@@ -20,6 +19,9 @@ const buildBookingFormState = (booking: Booking): BookingFormState => ({
   startsAt: formatDateTimeInput(booking.startsAt),
   endsAt: formatDateTimeInput(booking.endsAt),
 });
+
+const FieldError = ({ message }: { message?: string }) =>
+  message ? <p className="text-sm text-danger">{message}</p> : null;
 
 export const BookingsPage = () => {
   const { isFeatureEnabled, user } = useAuth();
@@ -34,10 +36,17 @@ export const BookingsPage = () => {
     endsAt: "",
   });
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [createFieldErrors, setCreateFieldErrors] = useState<BookingFormErrors>(
+    {},
+  );
   const [bookingErrors, setBookingErrors] = useState<Record<string, string>>(
     {},
   );
+  const [bookingFieldErrors, setBookingFieldErrors] = useState<
+    Record<string, BookingFormErrors>
+  >({});
 
   useEffect(() => {
     const loadBookings = async () => {
@@ -47,7 +56,7 @@ export const BookingsPage = () => {
       }
 
       setLoading(true);
-      setCreateError(null);
+      setLoadError(null);
 
       try {
         const nextBookings = await bookingService.list();
@@ -60,11 +69,9 @@ export const BookingsPage = () => {
             ]),
           ),
         );
-      } catch (loadError) {
-        setCreateError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Unable to load bookings",
+      } catch (error) {
+        setLoadError(
+          error instanceof Error ? error.message : "Unable to load bookings",
         );
       } finally {
         setLoading(false);
@@ -76,6 +83,15 @@ export const BookingsPage = () => {
 
   const handleCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    setCreateError(null);
+    setCreateFieldErrors({});
+
+    const errors = validateBookingFormState(createState);
+    if (hasBookingFormErrors(errors)) {
+      setCreateFieldErrors(errors);
+      return;
+    }
 
     try {
       const booking = await bookingService.create(createState);
@@ -94,12 +110,9 @@ export const BookingsPage = () => {
         startsAt: "",
         endsAt: "",
       });
-      setCreateError(null);
-    } catch (createError) {
+    } catch (error) {
       setCreateError(
-        createError instanceof Error
-          ? createError.message
-          : "Unable to create booking",
+        error instanceof Error ? error.message : "Unable to create booking",
       );
     }
   };
@@ -119,11 +132,19 @@ export const BookingsPage = () => {
   };
 
   const handleSave = async (bookingId: string) => {
+    const formState = bookingEdits[bookingId];
+
+    setBookingErrors((current) => ({ ...current, [bookingId]: "" }));
+    setBookingFieldErrors((current) => ({ ...current, [bookingId]: {} }));
+
+    const errors = validateBookingFormState(formState);
+    if (hasBookingFormErrors(errors)) {
+      setBookingFieldErrors((current) => ({ ...current, [bookingId]: errors }));
+      return;
+    }
+
     try {
-      const updatedBooking = await bookingService.update(
-        bookingId,
-        bookingEdits[bookingId],
-      );
+      const updatedBooking = await bookingService.update(bookingId, formState);
       setBookings((current) =>
         current.map((booking) =>
           booking._id === bookingId ? updatedBooking : booking,
@@ -133,7 +154,6 @@ export const BookingsPage = () => {
         ...current,
         [bookingId]: buildBookingFormState(updatedBooking),
       }));
-      setBookingErrors((current) => ({ ...current, [bookingId]: "" }));
     } catch (saveError) {
       setBookingErrors((current) => ({
         ...current,
@@ -180,6 +200,10 @@ export const BookingsPage = () => {
     );
   }
 
+  if (loadError) {
+    return <StatusPanel title="Bookings unavailable" message={loadError} />;
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -189,6 +213,7 @@ export const BookingsPage = () => {
       <section className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
         <form
           className="rounded-3xl bg-white p-6 shadow-sm"
+          noValidate
           onSubmit={handleCreate}
         >
           <h2 className="text-xl font-semibold text-ink">Create booking</h2>
@@ -204,6 +229,7 @@ export const BookingsPage = () => {
               placeholder="Booking title"
               value={createState.title}
             />
+            <FieldError message={createFieldErrors.title} />
             <textarea
               className="min-h-28 w-full rounded-2xl border border-slate-200 transition hover:border-slate-300 px-4 py-3 placeholder:text-[#94A3B880]"
               onChange={(event) =>
@@ -226,6 +252,7 @@ export const BookingsPage = () => {
               type="datetime-local"
               value={createState.startsAt}
             />
+            <FieldError message={createFieldErrors.startsAt} />
             <input
               className="w-full rounded-2xl border border-slate-200 transition hover:border-slate-300 px-4 py-3"
               onChange={(event) =>
@@ -237,6 +264,7 @@ export const BookingsPage = () => {
               type="datetime-local"
               value={createState.endsAt}
             />
+            <FieldError message={createFieldErrors.endsAt} />
             {createError ? (
               <p className="text-sm text-danger">{createError}</p>
             ) : null}
@@ -253,6 +281,7 @@ export const BookingsPage = () => {
             {bookings.map((booking) => {
               const canEdit = canEditBooking(user, booking);
               const formState = bookingEdits[booking._id];
+              const fieldErrors = bookingFieldErrors[booking._id] ?? {};
 
               return (
                 <li key={booking._id}>
@@ -307,11 +336,12 @@ export const BookingsPage = () => {
                         }
                       />
                     </div>
-                    {bookingErrors[booking._id] ? (
-                      <p className="mt-4 text-sm text-danger">
-                        {bookingErrors[booking._id]}
-                      </p>
-                    ) : null}
+                    <div className="mt-4 space-y-1">
+                      <FieldError message={fieldErrors.title} />
+                      <FieldError message={fieldErrors.startsAt} />
+                      <FieldError message={fieldErrors.endsAt} />
+                      <FieldError message={bookingErrors[booking._id]} />
+                    </div>
                     <div className="mt-4 flex flex-wrap gap-3">
                       <button
                         className="rounded-[10px] bg-ink px-4 py-2 text-sm font-medium text-white transition hover:opacity-80 active:opacity-70 disabled:cursor-not-allowed disabled:opacity-50"
