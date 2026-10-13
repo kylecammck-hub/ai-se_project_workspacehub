@@ -29,7 +29,9 @@ export const ProjectsPage = () => {
         taskService.list(),
       ]);
       setProjects(
-        nextProjects.map((project) => buildProjectWithTaskCount(project, tasks)),
+        nextProjects.map((project) =>
+          buildProjectWithTaskCount(project, tasks),
+        ),
       );
     } catch (error) {
       setError(
@@ -147,7 +149,8 @@ export const ProjectsPage = () => {
                         {project.description}
                       </p>
                       <p className="mt-2 text-xs font-medium text-slate-500">
-                        {project.taskCount} {project.taskCount === 1 ? "task" : "tasks"}
+                        {project.taskCount}{" "}
+                        {project.taskCount === 1 ? "task" : "tasks"}
                       </p>
                     </div>
                     <div className="flex gap-2">
