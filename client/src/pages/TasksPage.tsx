@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { PageHeader } from "../components/PageHeader";
 import { StatusPanel } from "../components/StatusPanel";
+import { TaskComments } from "../components/TaskComments";
 import { useAuth } from "../hooks/useAuth";
 import { projectService } from "../services/projectService";
 import { taskService } from "../services/taskService";
@@ -59,6 +60,15 @@ export const TasksPage = () => {
   const [loading, setLoading] = useState(true);
   const [createError, setCreateError] = useState<string | null>(null);
   const [taskErrors, setTaskErrors] = useState<Record<string, string>>({});
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+
+  const setCommentCount = (taskId: string, count: number) => {
+    setTasks((current) =>
+      current.map((task) =>
+        task._id === taskId ? { ...task, commentCount: count } : task,
+      ),
+    );
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -451,7 +461,29 @@ export const TasksPage = () => {
                           Delete
                         </button>
                       ) : null}
+                      <button
+                        aria-expanded={expandedTaskId === task._id}
+                        className="ml-auto rounded-[10px] px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+                        onClick={() =>
+                          setExpandedTaskId((current) =>
+                            current === task._id ? null : task._id,
+                          )
+                        }
+                        type="button"
+                      >
+                        {expandedTaskId === task._id ? "Hide" : "Show"} comments
+                        ({task.commentCount ?? 0})
+                      </button>
                     </div>
+                    {expandedTaskId === task._id ? (
+                      <TaskComments
+                        onCountChange={(count) =>
+                          setCommentCount(task._id, count)
+                        }
+                        taskId={task._id}
+                        users={users}
+                      />
+                    ) : null}
                   </article>
                 </li>
               );

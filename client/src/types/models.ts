@@ -50,6 +50,17 @@ export interface Task {
   priority: TaskPriority;
   assignedTo: string | null;
   dueDate: string | null;
+  commentCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Comment {
+  _id: string;
+  organizationId: string;
+  taskId: string;
+  authorId: string;
+  content: string;
   createdAt: string;
   updatedAt: string;
 }
