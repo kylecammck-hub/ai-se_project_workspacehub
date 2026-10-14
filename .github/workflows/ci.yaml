@@ -6,8 +6,34 @@ on:
   pull_request:
 
 jobs:
+  validate-server:
+    name: Validate server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck --workspace server
+      - run: npm run build --workspace server
+
+  validate-client:
+    name: Validate client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck --workspace client
+      - run: npm run build --workspace client
+
   lint:
-    name: Lint
+    name: Lint and format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,21 +43,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-
-  format:
-    name: Format check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
       - run: npm run format:check
 
-  test:
-    name: Unit tests
+  test-client:
+    name: Client unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,16 +55,4 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm test
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+      - run: npm run test --workspace client
