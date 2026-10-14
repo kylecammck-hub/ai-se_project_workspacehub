@@ -33,5 +33,5 @@ export const canDeleteResources = (user: User | null) => {
 };
 
 export const canCreateProject = (user: User | null) => {
-  return Boolean(user);
+  return isPrivilegedRole(user?.role);
 };
