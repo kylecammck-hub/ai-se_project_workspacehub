@@ -30,10 +30,13 @@ describe("isPrivilegedRole", () => {
 });
 
 describe("canCreateProject", () => {
-  it("allows any signed-in user", () => {
+  it("allows owners and admins", () => {
     expect(canCreateProject(makeUser("owner"))).toBe(true);
     expect(canCreateProject(makeUser("admin"))).toBe(true);
-    expect(canCreateProject(makeUser("member"))).toBe(true);
+  });
+
+  it("blocks members", () => {
+    expect(canCreateProject(makeUser("member"))).toBe(false);
   });
 
   it("blocks signed-out visitors", () => {
