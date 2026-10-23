@@ -6,6 +6,7 @@ import { errorHandler } from "./middleware/errorHandler";
 import { notFoundHandler } from "./middleware/notFound";
 import authRoutes from "./routes/authRoutes";
 import bookingRoutes from "./routes/bookingRoutes";
+import commentRoutes from "./routes/commentRoutes";
 import organizationRoutes from "./routes/organizationRoutes";
 import projectRoutes from "./routes/projectRoutes";
 import taskRoutes from "./routes/taskRoutes";
@@ -35,6 +36,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/organizations", organizationRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/projects", projectRoutes);
+app.use("/api/tasks/:id/comments", commentRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/bookings", bookingRoutes);
 

@@ -9,7 +9,7 @@ import { taskService } from "../services/taskService";
 import { userService } from "../services/userService";
 import { useAuth } from "../hooks/useAuth";
 import type { Booking, Project, Task, User } from "../types/models";
-import { formatDateInput, formatDateTime } from "../utils/date";
+import { formatDateTime } from "../utils/date";
 
 interface DashboardData {
   projects: Project[];
@@ -143,9 +143,7 @@ export const DashboardPage = () => {
                   >
                     <div className="flex items-center justify-between gap-4">
                       <div>
-                        <h3 className="font-semibold text-ink">
-                          {task.title}
-                        </h3>
+                        <h3 className="font-semibold text-ink">{task.title}</h3>
                         <p className="text-[13px] text-slate-500">
                           Due {formatDateTime(task.dueDate)}
                         </p>
@@ -171,6 +169,35 @@ export const DashboardPage = () => {
           </div>
         </div>
         <div className="space-y-6">
+          <div className="rounded-[20px] bg-white p-8 shadow-sm">
+            <h2 className="text-xl font-bold text-ink">Members</h2>
+            {data.users.length ? (
+              <ul className="mt-4 space-y-3">
+                {data.users.slice(0, 4).map((member) => (
+                  <li
+                    className="rounded-[12px] border border-slate-200 p-[18px]"
+                    key={member._id}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-ink">
+                          {member.firstName} {member.lastName}
+                        </p>
+                        <p className="truncate text-[13px] text-slate-500">
+                          {member.email}
+                        </p>
+                      </div>
+                      <span className="rounded-[6px] bg-panel px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-ink">
+                        {member.role}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-4 text-sm text-slate-500">No members yet.</p>
+            )}
+          </div>
           <div className="rounded-[20px] bg-white p-8 shadow-sm">
             <h2 className="text-xl font-bold text-ink">Feature flags</h2>
             <ul className="mt-4 space-y-3">
@@ -200,9 +227,7 @@ export const DashboardPage = () => {
                         className="rounded-2xl border border-slate-200 px-4 py-3"
                         key={booking._id}
                       >
-                        <p className="font-medium text-ink">
-                          {booking.title}
-                        </p>
+                        <p className="font-medium text-ink">{booking.title}</p>
                         <p className="text-sm text-slate-500">
                           {formatDateTime(booking.startsAt)} to{" "}
                           {formatDateTime(booking.endsAt)}

@@ -1,10 +1,26 @@
 # WorkspaceHub
 
-WorkspaceHub is a project in TripleTen's AI Software Engineering program. It is a full-stack MERN application built with TypeScript on both the client and server. It supports multi-tenant organizations, role-based access, projects, tasks, bookings, and per-organization feature flags. 
+WorkspaceHub is a project in TripleTen's AI Software Engineering program. It is a full-stack MERN application built with TypeScript on both the client and server. It supports multi-tenant organizations, role-based access, projects, tasks, bookings, and per-organization feature flags.
 
 Students are given this as starting code and, over the course of two sprints, accomplish a number of fixes, refactorings, and new features. The focus of these sprints is on safely and effectively using AI in an existing codebase.
 
-## Starting stack
+## Live Demo
+
+Frontend: https://workspacehub-client-git-workspacehub-part-2-triple-ten3.vercel.app
+
+API health check: https://workspacehub-api-git-workspacehub-part-2-triple-ten3.vercel.app/api/health
+
+## Environment Variables
+
+| Variable | Where | Description | Example (local) |
+|---|---|---|---|
+| `MONGODB_URI` | server | MongoDB connection string (Atlas in production, set only in Vercel) | `mongodb://127.0.0.1:27017/workspacehub` |
+| `JWT_SECRET` | server | Secret used to sign auth tokens | `super-secret-jwt-key` |
+| `CLIENT_ORIGIN` | server | Allowed CORS origin (the frontend URL) | `http://localhost:5173` |
+| `PORT` | server | Local API port (not used on Vercel) | `5001` |
+| `VITE_API_URL` | client | Base URL of the API | `http://localhost:5001` |
+
+## Tech Stack
 
 - React + Vite + TypeScript
 - Tailwind CSS
@@ -12,6 +28,7 @@ Students are given this as starting code and, over the course of two sprints, ac
 - MongoDB + Mongoose
 - JWT authentication
 - Context API for client state
+- Vercel (serverless) + MongoDB Atlas
 
 ## Project Structure
 

@@ -54,3 +54,10 @@ export const canChangeUserRole = (
 
   return true;
 };
+
+export const canManageComment = (
+  actor: AuthPayload,
+  authorId: string | null | undefined,
+): boolean => {
+  return isPrivilegedRole(actor.role) || actor.userId === String(authorId);
+};

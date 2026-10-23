@@ -50,6 +50,17 @@ export interface Task {
   priority: TaskPriority;
   assignedTo: string | null;
   dueDate: string | null;
+  commentCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Comment {
+  _id: string;
+  organizationId: string;
+  taskId: string;
+  authorId: string;
+  content: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -76,3 +87,9 @@ export interface MePayload {
   user: User;
   organization: Organization;
 }
+export interface ProjectCreatePayload {
+  name: string;
+  description: string;
+}
+
+export type ProjectUpdatePayload = Partial<ProjectCreatePayload>;

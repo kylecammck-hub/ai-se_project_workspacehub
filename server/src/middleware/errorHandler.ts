@@ -13,6 +13,13 @@ export const errorHandler = (
     return sendError(res, error.message, error.statusCode);
   }
 
+  if (
+    error instanceof SyntaxError &&
+    (error as SyntaxError & { type?: string }).type === "entity.parse.failed"
+  ) {
+    return sendError(res, "Request body must be valid JSON", 400);
+  }
+
   if (error instanceof mongoose.Error.ValidationError) {
     return sendError(res, error.message, 400);
   }
